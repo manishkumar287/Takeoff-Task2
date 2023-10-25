@@ -82,11 +82,19 @@ func CreateEmployee(c *gin.Context) {
 		defer w.Flush()
 	}
 
-	// employeesLen, err := ReadEmployees()
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
+	// Check if the user already exists
+	employees, err := ReadEmployees()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	for _, emp := range employees {
+		if emp.Email == employee.Email {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+			return
+		}
+	}
 
 	// Open the CSV file for writing
 	f, err := os.OpenFile("./utils/employees.csv", os.O_APPEND|os.O_WRONLY, 0644)
@@ -112,7 +120,6 @@ func CreateEmployee(c *gin.Context) {
 func isValidEmail(email string) bool {
 	// Define a regular expression for a basic email address format.
 	// Note that this is a simple example, and email validation can be quite complex.
-	// You can adjust the regular expression based on your specific requirements.
 	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	valid := regexp.MustCompile(pattern).MatchString(email)
 

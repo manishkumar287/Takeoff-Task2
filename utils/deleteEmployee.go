@@ -25,13 +25,26 @@ func DeleteEmployee(c *gin.Context) {
 	// Create a CSV reader
 	r := csv.NewReader(f)
 
-	// Create a CSV writer
-	// w := csv.NewWriter(f)
 
 	// Read all the employee records
 	records, err := r.ReadAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the employee exists in the CSV file
+	employeeFound := false
+	for _, record := range records {
+		if record[0] == id {
+		employeeFound = true
+		break
+		}
+	}
+
+	if !employeeFound {
+		// Return an error message if the employee does not exist
+		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return
 	}
 
